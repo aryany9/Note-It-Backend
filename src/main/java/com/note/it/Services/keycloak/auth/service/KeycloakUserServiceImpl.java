@@ -1,15 +1,21 @@
 package com.note.it.Services.keycloak.auth.service;
 
 import com.note.it.Entities.User;
+import com.note.it.Exceptions.EntityNotFoundException;
 import com.note.it.Repositories.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
+import org.keycloak.KeycloakPrincipal;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+
+import java.util.NoSuchElementException;
 
 @Service
 @Slf4j
@@ -19,7 +25,8 @@ public class KeycloakUserServiceImpl implements KeycloakUserService {
     private static String fiuGroupId;
     private final RealmResource realmResource;
 
-    @Autowired private UserRepository userRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     @Value("${app.keycoak.user.role}")
     private String userRole;
@@ -30,7 +37,16 @@ public class KeycloakUserServiceImpl implements KeycloakUserService {
     }
 
     @Override
-    public boolean isUserExistWithEmailId(String emailId){
+    public User getUserByEmailId(String emailId) {
+        try {
+            return userRepository.findByEmailId(emailId).get();
+        } catch (NoSuchElementException ex) {
+            throw new EntityNotFoundException(HttpStatus.NOT_FOUND, "user is not registered");
+        }
+    }
+
+    @Override
+    public boolean isUserExistWithEmailId(String emailId) {
         return userRepository.countUserByEmailId(emailId) != 0;
     }
 
@@ -39,5 +55,43 @@ public class KeycloakUserServiceImpl implements KeycloakUserService {
         User user = getUserByEmailId(emailId);
 
         return user.getIsVerified();
+    }
+
+    @Override
+    public User getUserFromToken() {
+        KeycloakPrincipal keycloakPrincipal = (KeycloakPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        try {
+            return userRepository
+                    .findByEmailId(
+                            keycloakPrincipal.getKeycloakSecurityContext().getToken().getPreferredUsername())
+                    .get();
+        } catch (NoSuchElementException notFoundException) {
+            throw new EntityNotFoundException(HttpStatus.NOT_FOUND, USER_NOT_FOUND);
+        }
+    }
+
+    @Override
+    public void deleteUser() {
+
+    }
+
+    @Override
+    public void updateUser(User user) {
+
+    }
+
+    @Override
+    public void addGroup(String entityId) {
+
+    }
+
+    @Override
+    public void updatePassword(String emailId, String newPassword) {
+
+    }
+
+    @Override
+    public void deleteUnverifiedUser(String emailId) {
+
     }
 }

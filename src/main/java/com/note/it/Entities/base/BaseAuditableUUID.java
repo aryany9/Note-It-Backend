@@ -1,5 +1,6 @@
 package com.note.it.Entities.base;
 
+import com.note.it.Utilities.UUIDUtils;
 import jakarta.persistence.MappedSuperclass;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -31,7 +32,7 @@ import java.util.UUID;
 public class BaseAuditableUUID extends AbstractBaseAuditable implements Serializable {
     private UUID id;
 
-    public BaseAuditableUUID(){
+    public BaseAuditableUUID() {
         super();
         id = UUIDUtils.generate();
     }
