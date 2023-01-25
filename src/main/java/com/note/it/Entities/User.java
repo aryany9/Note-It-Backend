@@ -18,6 +18,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class User extends BaseAuditableUUID {
 
+    @Column(nullable = false, name = "first_name")
+    private String firstName;
+
+    @Column(nullable = false, name = "last_name")
+    private String lastName;
+
+    @Column(nullable = false, name = "password")
+    private String password;
+
     @Column(nullable = false, name = "is_verified", columnDefinition = "boolean default false")
     private Boolean isVerified;
     @Column(nullable = false, name="email_id")
